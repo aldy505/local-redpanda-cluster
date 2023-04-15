@@ -25,7 +25,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 60s
 
   rp2:
     image: docker.redpanda.com/vectorized/redpanda:v22.2.2
@@ -38,7 +38,7 @@ services:
       - --memory 1G
       - --reserve-memory 0M
       - --overprovisioned
-      - --node-id 0
+      - --node-id 1
       - --check=false
       - --pandaproxy-addr PLAINTEXT://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
       - --advertise-pandaproxy-addr PLAINTEXT://rp2:28082,OUTSIDE://rp2:8082
@@ -54,7 +54,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     depends_on:
       rp1:
         condition: service_healthy
@@ -70,7 +70,7 @@ services:
       - --memory 1G
       - --reserve-memory 0M
       - --overprovisioned
-      - --node-id 0
+      - --node-id 2
       - --check=false
       - --pandaproxy-addr PLAINTEXT://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
       - --advertise-pandaproxy-addr PLAINTEXT://rp3:28082,OUTSIDE://rp3:8082
@@ -86,7 +86,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     depends_on:
       rp1:
         condition: service_healthy
@@ -95,9 +95,18 @@ services:
   kafka-console:
     image: docker.redpanda.com/vectorized/console:latest
     environment:
-      KAFKA_BROKERS: rp1:29092,rp2:29092,rp3:29092
+      KAFKA_BROKERS: rp1:9092,rp2:9092,rp3:9092
     ports:
       - 8080:8080
     depends_on:
-      kafka:
+      rp1:
         condition: service_healthy
+      rp2:
+        condition: service_healthy
+      rp3:
+        condition: service_healthy
+
+volumes:
+  rp1data:
+  rp2data:
+  rp3data:
